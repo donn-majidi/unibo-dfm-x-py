@@ -58,14 +58,14 @@ def kpss_wrapper(data: pd.Series, **kwargs):
 
     """
     
-    if data.isna.any():
+    if data.isna().any():
         raise ValueError('Ther input series contains NaN values at index: {data[data.isna()].index}')
         
     results = kpss(data, **kwargs)
     labels = ['KPSS test statistic', 'p-value bound', '# lags']
     
     out = pd.Series(results[0:3], index=labels)
-    for key, val in results[4].items():
+    for key, val in results[3].items():
         out[f'critical value ({key})'] = val
         
     return out
