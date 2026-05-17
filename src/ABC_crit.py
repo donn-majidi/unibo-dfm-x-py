@@ -1,10 +1,54 @@
 import numpy as np
 import pandas as pd
-from scipy.stats import zscore
 import matplotlib.pyplot as plt
+import seaborn as sns
+
+plt.rc('figure', figsize=(16,6))
+plt.rc('lines', linewidth=1.5)
+sns.set_style('darkgrid')
 
 def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int | None = 3,
-             seed: int | None = 1776, demean: bool | None = False, graph: bool | None = False):
+             seed: int | None = 1776, demean: bool | None = False, ax: plt.Axes | None = None):
+    """
+    The ABC criterion for determining the number of common factors.
+    
+    This function implements the information criterion described in Alessi,
+    Barigozzi and Capasso (2010).
+    
+    
+    Reference: Alessi, L., M. Barigozzi, and M. Capasso (2010). 
+    Improved penalization for determining the number of factors 
+    in approximate static factor models. 
+    Statistics and Probability Letters 80, 1806?1813.
+    
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Stationary input data matrix of size T x n.
+    kmax : int
+        Maximum number of factors.
+    nbck : int | None, optional
+        Number of sub-blocks to use. The default is floor(n/10).
+    cmax : int | None, optional
+        Maximum value for the penalty constant. The default is 3.
+    seed : int | None, optional
+        Seed for random permutation generator. The default is 1776.
+    demean : bool | None, optional
+        Whether to demean the input data matrix. The default is False.
+    ax : plt.Axes | None, optional
+        Canvas on which to plot the graphs as in the paper. The default is None.
+
+    Raises
+    ------
+    ValueError
+        If data set includes NaN values.
+
+    Returns
+    -------
+    out : list
+        A list containing the estimated number of factors and the plt.Axes object with the plots.
+
+    """
     
     if data.isna().any().any():
         raise ValueError('Dataset includes NaN values.')
@@ -75,8 +119,15 @@ def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int 
     
     rhat1 = ABC[np.where(ABC[1:, 3] > 0.05)[0] + 1, 0][0]
     rhat2 = ABC[np.where(ABC[1:, 3] > 0.01)[0] + 1, 0][0]
+
+    if ax is not None:
+        ax.plot(cr,abc[-1,:], 'r-', label=r'$r^{*T}_{c;N}$')
+        ax.plot(cr,5*sabc, 'b--', label=r'$S_c$')
+        ax.set(xlim=[0,1])
+        ax.legend()
+        ax.set_title('ABC estimated number of factors')
     
-    out = [rhat1, rhat2]
+    out = [rhat1, rhat2, ax]
     
     return out
 
