@@ -124,7 +124,7 @@ def fred_qd_transform(data: pd.DataFrame):
             
             
         _input_series_tr.name = data.columns[i]
-        _input_series_tr.index = pd.to_datetime(input_dates, format="%d/%m/%Y", errors='coerce')
+        _input_series_tr.index = pd.to_datetime(input_dates, format="%m/%d/%Y", errors='coerce')
         
         transformed.append(_input_series_tr)
         
