@@ -117,8 +117,8 @@ def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int 
     ABC[:,3] = ABC[:,2] - ABC[:,1]
     ABC = ABC[:c1]
     
-    rhat1 = ABC[np.where(ABC[1:, 3] > 0.05)[0] + 1, 0][0]
-    rhat2 = ABC[np.where(ABC[1:, 3] > 0.01)[0] + 1, 0][0]
+    rhat1 = int(ABC[np.where(ABC[1:, 3] > 0.05)[0] + 1, 0][0])
+    rhat2 = int(ABC[np.where(ABC[1:, 3] > 0.01)[0] + 1, 0][0])
 
     if ax is not None:
         ax.plot(cr,abc[-1,:], 'r-', label=r'$r^{*T}_{c;N}$')
