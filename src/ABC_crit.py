@@ -41,7 +41,11 @@ def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int 
     Raises
     ------
     ValueError
+        If input data is not a pandas dataframe.
+    ValueError
         If data set includes NaN values.
+    ValueError
+        If kmax is not provided.
 
     Returns
     -------
@@ -49,6 +53,9 @@ def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int 
         A list containing the estimated number of factors and the plt.Axes object with the plots.
 
     """
+        
+    if type(data) != pd.core.frame.DataFrame:
+        raise ValueError(f'Input data must be a pandas DataFrame, {type(data)} provided instead.')
     
     if data.isna().any().any():
         raise ValueError('Dataset includes NaN values.')
