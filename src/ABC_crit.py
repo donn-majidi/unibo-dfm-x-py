@@ -8,7 +8,7 @@ plt.rc('lines', linewidth=1.5)
 sns.set_style('darkgrid')
 
 def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int | None = 3,
-             seed: int | None = 1776, demean: bool | None = False, ax: plt.Axes | None = None):
+             seed: int | None = 1776, demean: bool | None = True, ax: plt.Axes | None = None):
     """
     The ABC criterion for determining the number of common factors.
     
@@ -35,7 +35,7 @@ def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int 
     seed : int | None, optional
         Seed for random permutation generator. The default is 1776.
     demean : bool | None, optional
-        Whether to demean the input data matrix. The default is False.
+        Whether to demean the input data matrix. The default is True.
     ax : plt.Axes | None, optional
         Canvas on which to plot the graphs as in the paper. The default is None.
 
@@ -129,8 +129,11 @@ def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int 
     ABC[:,3] = ABC[:,2] - ABC[:,1]
     ABC = ABC[:c1]
     
-    rhat1 = int(ABC[np.where(ABC[1:, 3] > 0.05)[0] + 1, 0][0])
-    rhat2 = int(ABC[np.where(ABC[1:, 3] > 0.01)[0] + 1, 0][0])
+    idx_5 = np.where(ABC[1:, 3] > 0.05)[0]
+    idx_1 = np.where(ABC[1:, 3] > 0.01)[0]
+    
+    rhat1 = int(ABC[idx_5 + 1, 0][0]) if idx_5.size > 0 else kmax
+    rhat2 = int(ABC[idx_1 + 1, 0][0]) if idx_1.size > 0 else kmax
     
     out = [rhat1, rhat2]
 
