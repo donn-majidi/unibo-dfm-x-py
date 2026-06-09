@@ -78,7 +78,6 @@ def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int 
     
     s = 0
     IC1 = np.zeros(kmax+1)
-    #abc = np.zeros((np.floor((nbck+1)//npace), (cmax * step)+1), dtype=int)
     abc = np.zeros(((nbck + 1) // npace, int(cmax * step)), dtype=int)
     rng = np.random.default_rng(seed=seed)
     
@@ -104,7 +103,6 @@ def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int 
         s += 1
             
     cr = np.arange(1,int(cmax*step)+1)/step
-    #ABC = np.array([[kmax,0,0],[0,0,0]])
     
     ABC = np.zeros((cr.shape[0]+1, 4))
     ABC[0,0] = kmax
@@ -127,6 +125,8 @@ def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int 
     
     rhat1 = int(ABC[np.where(ABC[1:, 3] > 0.05)[0] + 1, 0][0])
     rhat2 = int(ABC[np.where(ABC[1:, 3] > 0.01)[0] + 1, 0][0])
+    
+    out = [rhat1, rhat2]
 
     if ax is not None:
         ax.plot(cr,abc[-1,:], 'r-', label=r'$r^{*T}_{c;N}$')
@@ -134,25 +134,6 @@ def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int 
         ax.set(xlim=[0,1])
         ax.legend()
         ax.set_title('ABC estimated number of factors')
-    
-    out = [rhat1, rhat2, ax]
-    
+        out.append(ax)
+        
     return out
-
-
-    
-    
-            
-    
-    
-            
-            
-            
-        
-        
-        
-        
-    
-    
-    
-    
