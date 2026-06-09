@@ -16,6 +16,7 @@ def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int 
     Barigozzi and Capasso (2010).
     
     
+    
     Reference: Alessi, L., M. Barigozzi, and M. Capasso (2010). 
     Improved penalization for determining the number of factors 
     in approximate static factor models. 
@@ -51,6 +52,11 @@ def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int 
     -------
     out : list
         A list containing the estimated number of factors and the plt.Axes object with the plots.
+
+    Authors
+    -------
+    - Original MATLAB Code: Matteo Barigozzi
+    - Python implementation: Shahriyar (Donn) Majidi    
 
     """
         
