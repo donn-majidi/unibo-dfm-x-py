@@ -142,7 +142,7 @@ def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int 
         ax.plot(cr,5*sabc, 'b--', label=r'$S_c$')
         ax.set(xlim=[0,1])
         ax.set(xlabel='Tuning parameter - C')
-        ax.set(ylabel='Integer number of factors - r')
+        ax.set(ylabel='Number of factors - r')
         ax.legend()
         ax.set_title('ABC estimated number of factors')
         out.append(ax)
