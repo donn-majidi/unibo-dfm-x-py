@@ -62,10 +62,9 @@ def transition_mat(dimension: int, order: int, stable: bool | None = False,
         _eigvals = np.linalg.eigvals(J)
         spectral_radius = np.max(np.abs(_eigvals))
         
-        J = J * alpha/spectral_radius
+        J[:dimension, i*dimension:(i+1)*dimension] = J[:dimension, i*dimension:(i+1)*dimension] * alpha/spectral_radius
         
         _eigvals_stable = np.linalg.eigvals(J)
-        J[dimension:, :dimension*(order-1)] = np.identity(dimension*(order-1))
         
         assert np.all(np.abs(_eigvals_stable) < 1), "The Companion Matrix is not Stable"
         
