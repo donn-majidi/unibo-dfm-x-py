@@ -1,4 +1,5 @@
 import scipy
+from scipy.stats import chi2
 import numpy as np
 import pandas as pd
 import sys
@@ -8,15 +9,15 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from ABC_crit import ABC_crit
 from fred_transform import fred_qd_transform
-from statsmodels.tsa.stattools import adfuller, acf, pacf
+import statsmodels.api as sm
+from statsmodels.tsa.stattools import adfuller
 
 
 plt.rc('figure', figsize=(18,10))
 sns.set_style('darkgrid')
 
-## Define default_rng with seed for reproducibility
+## Define default seed
 seed = 1776
-rng = np.random.default_rng(seed)
 
 """
 1. Load and initialize the data.
@@ -29,6 +30,7 @@ df = pd.read_csv('./data/2026-04-QD.csv')
 ## Often for some variables the observation corresponding to the last observation date is not yet recorded
 df = df.iloc[:-1,:]
 fred_df = fred_qd_transform(df)
+fred_df.index.freq = fred_df.index.inferred_freq
 
 ## The first two observations will be lost due to the stationary I(2) transforms
 fred_df = fred_df.iloc[2:,:]
@@ -71,7 +73,7 @@ fred_df = fred_df.drop(columns=nonstat_names)
     2.1 Estiamte the number of common factors via the ABC criterion.
     2.2 Obtain estimates of the loadings and the factors via PCA and linear projection under the identification scheme:
         (F.T @ F)/T = I_r
-    2.4 Box-Jenkins paradigm to identify the order of the VAR process for modeling the dynamics of the common factors.
+    2.4 AIC + Likelihood Ratio test for determining the order of the VAR process followed by the common factors.
 
 """
 T, n = fred_df.shape
@@ -82,10 +84,14 @@ kmax = 8 * kf if kf > 0 else 8
 fig, ax = plt.subplots()
 rhat1, rhat2, plot = ABC_crit(fred_df, kmax, seed=seed, ax=ax, demean=True)
 plt.show()
+
 ## rhat1 and rhat2 are the estimated number of common factors at 5 and 1 percent thresholds.
 
 ## To proceed, we first standardize the data
-fred_df = (fred_df - fred_df.mean())/fred_df.std()
+fred_df_means = fred_df.mean()
+fred_df_stds = fred_df.std()
+
+fred_df = (fred_df - fred_df_means)/fred_df_stds
 
 ## PC Analysis via SVD of the data matrix
 U, s, Vh = scipy.linalg.svd(fred_df, full_matrices=False)
@@ -93,7 +99,7 @@ V = Vh.T
 S = np.diag(s)
 
 ## Visualize the scree plot
-p = sns.scatterplot(data=s/T)
+p = sns.scatterplot(data=s)
 p.set(xlabel='Component Index',
       ylabel='Singular Value (Scaled by T)',
       title='Scree Plot')
@@ -118,8 +124,8 @@ Under the identification assumption E[ff'] = I, we have:
         Lambda_hat = (V_x @ S_x)/sqrt(T)
                                       
 """
-V_x = V[:,:5]
-S_x = S[:5,:5]
+V_x = V[:,:rhat2]
+S_x = S[:rhat2,:rhat2]
 
 Lambda_hat = V_x @ S_x / np.sqrt(T)
 
@@ -138,12 +144,33 @@ Lambda_hat = V_x @ S_x / np.sqrt(T)
         F_hat = X V_x S_x/T (S_x/sqrt(T) V_x V_x.T S_x/sqrt(T))^(-1) = X V_x (S_x/sqrt(T))^(-1)
 
 """
-F_hat = fred_df @ V_x @ np.linalg.inv(S_x)/np.sqrt(T)
+F_hat = fred_df @ V_x @ np.linalg.inv(S_x/np.sqrt(T))
 
+## Specify a VAR process for the estiamted factors and use AIC to select the lag order of the process
+state_var = sm.tsa.VAR(F_hat, freq=F_hat.index.freq)
+state_lag_res = state_var.select_order(maxlags=8)
+lag_aic = state_lag_res.aic
+
+## We now compare the AIC selected process with the next most parsimonious process (whose order is simply given by the AIC selected lag order minus one) via the likelihood ratio test
+if lag_aic <= 1:
+    state_lag = lag_aic
+else:
+    fit1 = sm.tsa.VAR(F_hat, freq=F_hat.index.freq).fit(maxlags=lag_aic, ic=None)
+    fit2 = sm.tsa.VAR(F_hat.iloc[1:,:], freq=F_hat.index.freq).fit(maxlags=lag_aic-1, ic=None)
+    lr_stat = -2 * (fit2.llf - fit1.llf)
+    chi_df = F_hat.shape[1] ** 2
+
+    lr_pval = chi2.sf(lr_stat, chi_df)
+
+    state_lag = lag_aic if lr_pval < 0.05 else lag_aic - 1
 
 """
 3. State Space Representation and Estimation of the DFM via The Kalman Filter and The EM Algorithm
 """
+
+model_dfm = sm.tsa.DynamicFactorMQ(fred_df, factor_multiplicities=rhat2,
+                                   factor_orders=state_lag, standardize=False,
+                                   idiosyncratic_ar1=False)
 
 
 """
