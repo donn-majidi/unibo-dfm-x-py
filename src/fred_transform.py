@@ -70,7 +70,7 @@ def _fred_series_transform (data: pd.Series, transform_code: int):
 def fred_transform(data: pd.DataFrame, freq: str):
     """
     This function transforms the input data to achieve stationarity.
-    Transformations are based on integer codes which determin the
+    Transformations are based on integer codes which determine the
     type of transformation.
     
     transform_code  == 1 -> No transformation.
@@ -84,7 +84,7 @@ def fred_transform(data: pd.DataFrame, freq: str):
     Reference: FRED-QD: A Quarterly Database for Macroeconomic Research McCracken and Ng, 2020.
 
     Parameters
-    ---------- freq: str
+    ----------
     data : pd.DataFrame
         Raw FRED-QD or FRED-MD data frame.
         
@@ -128,6 +128,7 @@ def fred_transform(data: pd.DataFrame, freq: str):
         transformed.append(_input_series_tr)
         
     transformed_df = pd.concat(transformed, axis=1, join='outer')
+    transformed_df.index.freq = transformed_df.index.inferred_freq
     
     return transformed_df       
 
@@ -137,7 +138,7 @@ def fred_qd_transform(data: pd.DataFrame):
                   stacklevel=2)
     """
     This function transforms the input data to achieve stationarity.
-    Transformations are based on integer codes which determin the
+    Transformations are based on integer codes which determine the
     type of transformation.
     
     transform_code  == 1 -> No transformation.
