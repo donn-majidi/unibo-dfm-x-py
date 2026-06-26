@@ -24,10 +24,10 @@ A Python framework for macroeconomic forecasting and nowcasting with dynamic fac
 The full estimation pipeline proceeds in five stages:
  
 ```
-FRED-QD raw data
+FRED-QD or FRED-MD raw data
       │
       ▼
-1. fred_qd_transform        — apply stationarity transformations per tcode
+1. fred_transform           — apply stationarity transformations per tcode
       │
       ▼
 2. ABC_crit                 — estimate number of common factors r
