@@ -8,7 +8,7 @@ plt.rc('lines', linewidth=1.5)
 sns.set_style('darkgrid')
 
 def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int | None = 3,
-             seed: int | None = 1776, demean: bool | None = True, ax: plt.Axes | None = None):
+             seed: int | None = 1776, standardize: bool | None = True, ax: plt.Axes | None = None):
     """
     The ABC criterion for determining the number of common factors.
     
@@ -34,8 +34,8 @@ def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int 
         Maximum value for the penalty constant. The default is 3.
     seed : int | None, optional
         Seed for random permutation generator. The default is 1776.
-    demean : bool | None, optional
-        Whether to demean the input data matrix. The default is True.
+    standardize : bool | None, optional
+        Whether to standardize the input data matrix. The default is True.
     ax : plt.Axes | None, optional
         Canvas on which to plot the graphs as in the paper. The default is None.
 
@@ -77,7 +77,7 @@ def ABC_crit(data: pd.DataFrame, kmax: int , nbck: int | None = None, cmax: int 
     if nbck is None:
         nbck = int(np.floor(n/10))
     
-    if demean:
+    if standardize:
         data = (data - data.mean())/data.std()
         
     ## initialize the Criterion
